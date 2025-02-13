@@ -1,4 +1,16 @@
 #include <iostream>
+// possible commands
+enum commands {
+  quit, // exit is the name of a function already
+  echo,
+  unknown
+};
+
+commands identify_command(std::string str){
+  if(str.length() > 5 && !str.compare(0,5,"exit ")) return quit;
+  else if(str.length() > 5 && !str.compare(0,5,"echo ")) return echo;
+  else return unknown;
+}
 
 // exits the shell with err_codes 
 void exit_shell(std::string str){
@@ -20,19 +32,19 @@ int main() {
     std::getline(std::cin, input);
     
     // Commands ---------------------------------------------
-    // Checks if there's an exit command
-    if(!input.compare(0,5,"exit ")){
+    switch(identify_command(input))
+    {
+    case quit:
       exit_shell(input);
-    }
-
-    // Checks if there's an echo command
-    else if(!input.compare(0,5,"echo ")){
+      break;
+    
+    case echo:
       std::cout << input.substr(5) << std::endl;
-    }
-
-    // Unknown commands
-    else{
+      break;
+    
+    case unknown:
       std::cout << input << ": command not found" << std::endl;
+      break;
     }
   }
 }
