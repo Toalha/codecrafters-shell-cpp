@@ -1,9 +1,10 @@
 #include <iostream>
 
-int exit_shell(std::string str){
+// exits the shell with err_codes 
+void exit_shell(std::string str){
   int err_code = 0;
   sscanf(str.c_str(), "%*s %d", &err_code);
-  return err_code;
+  exit(err_code);
 }
 
 int main() {
@@ -18,13 +19,20 @@ int main() {
     std::string input;
     std::getline(std::cin, input);
     
+    // Commands ---------------------------------------------
     // Checks if there's an exit command
     if(!input.compare(0,5,"exit ")){
-      exit(exit_shell(input));
-      //std::cout << "exit " << exit_shell(input);
-      break;
+      exit_shell(input);
     }
 
-    std::cout << input << ": command not found" << std::endl;
+    // Checks if there's an echo command
+    else if(!input.compare(0,5,"echo ")){
+      std::cout << input.substr(5) << std::endl;
+    }
+
+    // Unknown commands
+    else{
+      std::cout << input << ": command not found" << std::endl;
+    }
   }
 }
