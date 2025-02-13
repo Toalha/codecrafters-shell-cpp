@@ -20,7 +20,8 @@ int main() {
     
     // Checks if there's an exit command
     if(!input.compare(0,5,"exit ")){
-      std::cout << "exit " << exit_shell(input);
+      exit(exit_shell(input));
+      //std::cout << "exit " << exit_shell(input);
       break;
     }
 
