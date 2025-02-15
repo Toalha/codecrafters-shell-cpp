@@ -46,7 +46,7 @@ commands identify_command(std::string str, std::unique_ptr<std::string> &path){
   return unknown;
 }
 
-// Custom implementation of C function strtok() that works with strings
+// Custom implementation of C function strtok() that works with strings and returns a vector of strings with each split string in order
 std::vector<std::string> mystrtok(std::string string_to_split, std::string token = " "){
   int start(0), found(0);
   std::vector<std::string> output;
@@ -55,7 +55,9 @@ std::vector<std::string> mystrtok(std::string string_to_split, std::string token
     output.push_back(string_to_split.substr(start, found - start));
     start = found + token.length();
   }
-  output.push_back(string_to_split.substr(start));
+  if(string_to_split.substr(start).length() != 0){
+    output.push_back(string_to_split.substr(start));
+  }
   return output;
 }
 
@@ -91,6 +93,40 @@ bool search_path(std::string command, std::unique_ptr<std::string> &path){
   return false;
 }
 
+// custom function to update the current directory path based on the intructions in the cd command
+// inputs: current filesystem::path, cd comman
+// output: updated filesystem::path if changes to a valid directory
+//         old path if its an invalid cd command
+std::filesystem::path update_current_directory_path(std::filesystem::path curr_path, std::string cd_commands){
+  // verifies if the cd command is a valid and absolute path, if so updates curr_path to the cd command
+  if(std::filesystem::is_directory(cd_commands) && std::filesystem::path(cd_commands).is_absolute()){
+    return cd_commands;
+  }
+
+  std::filesystem::path aux = curr_path;
+  std::vector<std::string> _commands = mystrtok(cd_commands, "/");
+
+
+  for(std::string instr: _commands){
+    if(!instr.compare("..")){
+      aux = aux.parent_path();
+    }
+    else if(!instr.compare(".")){
+      //do nothing
+    }
+    else{
+      aux.append(instr);
+    }
+  }
+  //checks if directory is valid, if not returns the original directory
+  if(std::filesystem::is_directory(aux)){
+    return aux;
+  }
+  else{
+    std::cout << "cd: /" << aux.stem().c_str() << ": No such file or directory" << std::endl;
+    return curr_path;
+  }
+}
 
 // exits the shell with err_codes 
 void exit_shell(std::string str){
@@ -152,12 +188,7 @@ int main() {
 
     case cd:{
       std::string aux(skip_spaces(input.substr(2))); // saves the input path without spaces 
-      if(std::filesystem::is_directory(aux)){
-        current_directory_path = aux;
-      }
-      else{
-        std::cout << "cd: " << aux << ": No such file or directory" << std::endl;
-      }
+      current_directory_path = update_current_directory_path(current_directory_path, aux);
       break;
     }
     case external_command:
