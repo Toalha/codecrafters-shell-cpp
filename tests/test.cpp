@@ -4,40 +4,31 @@
 #include <vector>
 
 
-std::vector<std::string> mystrtok(std::string string_to_split, std::string token = " "){
-    int start(0), found(0);
-    std::vector<std::string> output;
-  
-    while((found = string_to_split.find(token, start)) != std::string::npos){
-      output.push_back(string_to_split.substr(start, found - start));
-      start = found + token.length();
+// Custom funtion to skip spaces between the command and the argument
+inline std::string skip_spaces(std::string str){
+  for(int pos = 0; pos<str.length(); pos++){
+    if(str[pos] != ' '){
+      return str.substr(pos);
     }
-    output.push_back(string_to_split.substr(start));
-    return output;
   }
-
-void func2(std::unique_ptr<std::string> &path){
-  path = std::make_unique<std::string>("foi mudado na 2");
+  return " ";
 }
 
-void func1(std::unique_ptr<std::string> &path){
-  path = std::make_unique<std::string>("foi mudado na 1");
-  std::cout << *path << std::endl;
-  func2(path);
-  return;
-}
+int main(int argc, char *argv[]){ 
+    std::filesystem::path current_directory_path = std::filesystem::current_path();
+    std::cout << current_directory_path << std::endl;
 
-int main(int argc, char *argv[]){
+    std::string aaaa("cd       /home/");
+    std::string aux(skip_spaces(aaaa.substr(2))); // saves the input path without spaces 
+    std::cout << aux << std::endl;
 
-    // std::string test("cavalo azul");
-    // std::cout << test.find_first_of(" ") << std::endl;
+    if(std::filesystem::is_directory(aux)){
+      current_directory_path = aux;
+    }
+    std::cout << current_directory_path.c_str() << std::endl;
 
-    // test unique_ptr
-    // std::unique_ptr<std::string> path = std::make_unique<std::string>("initt");
-    // func1(path);
-    // std::cout << "main " << *path << std::endl;  
-
-    std::string test(std::filesystem::current_path());
-    std::cout << test << std::endl;  
+    // std::cout << std::filesystem::is_directory("/home/") << std::endl;  
+    // std::cout << std::filesystem::is_directory("/home2/") << std::endl;
+    // std::cout << std::filesystem::is_directory("/home/toalha/Desktop/codecrafters-shell-cpp/CMakeLists.txt") << std::endl; 
     return 0;
 }

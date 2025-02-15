@@ -12,6 +12,7 @@ enum commands {
   echo,
   type,
   pwd,
+  cd,
   external_command,
   unknown
 };
@@ -25,7 +26,8 @@ commands identify_command(std::string str, std::unique_ptr<std::string> &path){
   if(str.length() >= 4 && !str.compare(0,4,"exit")) return quit;
   else if(str.length() >= 4 && !str.compare(0,4,"echo")) return echo;
   else if(str.length() >= 4 && !str.compare(0,4,"type")){return type;}
-  else if(str.length() >=3 && !str.compare(0,4,"pwd")){return pwd;}
+  else if(str.length() >=3 && !str.compare(0,3,"pwd")){return pwd;}
+  else if(str.length() >=2 && !str.compare(0,2,"cd")){return cd;}
 
   //verification of external commands
   else{
@@ -55,6 +57,16 @@ std::vector<std::string> mystrtok(std::string string_to_split, std::string token
   }
   output.push_back(string_to_split.substr(start));
   return output;
+}
+
+// Custom funtion to skip spaces between the command and the argument
+inline std::string skip_spaces(std::string str){
+  for(int pos = 0; pos<str.length(); pos++){
+    if(str[pos] != ' '){
+      return str.substr(pos);
+    }
+  }
+  return " ";
 }
 
 // Search if the command is in folders specified by $PATH
@@ -95,11 +107,10 @@ std::string limit_input_string(){
 }
 
 int main() {
+  std::filesystem::path current_directory_path = std::filesystem::current_path();
   while(true){
     std::unique_ptr<std::string> path = std::make_unique<std::string>(); //variable storing useful paths to files/commands 
-    //std::make_unique<std::string>("First Path");
-
-    //std::string* path(nullptr); //auxiliary pointer to use on "case type:"
+    
 
     // Flush after every std::cout / std:cerr
     std::cout << std::unitbuf;
@@ -136,10 +147,19 @@ int main() {
       break;
     }
     case pwd:
-      path = std::make_unique<std::string>(std::filesystem::current_path());
-      std::cout << (*path) << std::endl;
+      std::cout << current_directory_path.c_str() << std::endl;
       break;
 
+    case cd:{
+      std::string aux(skip_spaces(input.substr(2))); // saves the input path without spaces 
+      if(std::filesystem::is_directory(aux)){
+        current_directory_path = aux;
+      }
+      else{
+        std::cout << "cd: " << aux << ": No such file or directory" << std::endl;
+      }
+      break;
+    }
     case external_command:
       system(input.c_str());  
       break;
