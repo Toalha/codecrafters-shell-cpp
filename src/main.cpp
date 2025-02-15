@@ -1,7 +1,7 @@
 #include <iostream>
-#include <cstring>
 #include <vector>
 #include <memory>
+#include <filesystem> 
 
 // maximum size allowed for the input
 constexpr int MAX_INPUT_SIZE = 256;
@@ -11,6 +11,7 @@ enum commands {
   quit, // exit is the name of a function already
   echo,
   type,
+  pwd,
   external_command,
   unknown
 };
@@ -24,6 +25,7 @@ commands identify_command(std::string str, std::unique_ptr<std::string> &path){
   if(str.length() >= 4 && !str.compare(0,4,"exit")) return quit;
   else if(str.length() >= 4 && !str.compare(0,4,"echo")) return echo;
   else if(str.length() >= 4 && !str.compare(0,4,"type")){return type;}
+  else if(str.length() >=3 && !str.compare(0,4,"pwd")){return pwd;}
 
   //verification of external commands
   else{
@@ -133,10 +135,12 @@ int main() {
       }
       break;
     }
-    
+    case pwd:
+      path = std::make_unique<std::string>(std::filesystem::current_path());
+      std::cout << (*path) << std::endl;
+      break;
+
     case external_command:
-      // input.insert(0, "/");
-      // input.insert(0, (*path));
       system(input.c_str());  
       break;
     

@@ -32,8 +32,12 @@ int main(int argc, char *argv[]){
     // std::string test("cavalo azul");
     // std::cout << test.find_first_of(" ") << std::endl;
 
-    std::unique_ptr<std::string> path = std::make_unique<std::string>("initt");
-    func1(path);
-    std::cout << "main " << *path << std::endl;  
+    // test unique_ptr
+    // std::unique_ptr<std::string> path = std::make_unique<std::string>("initt");
+    // func1(path);
+    // std::cout << "main " << *path << std::endl;  
+
+    std::string test(std::filesystem::current_path());
+    std::cout << test << std::endl;  
     return 0;
 }
