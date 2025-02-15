@@ -106,18 +106,22 @@ std::filesystem::path update_current_directory_path(std::filesystem::path curr_p
   std::filesystem::path aux = curr_path;
   std::vector<std::string> _commands = mystrtok(cd_commands, "/");
 
+  for(auto it = _commands.begin(); it != _commands.end(); it++){
+    if(it == _commands.begin() && !(*it).compare("~")){
+      aux = getenv("HOME");
+    }
 
-  for(std::string instr: _commands){
-    if(!instr.compare("..")){
+    else if(!(*it).compare("..")){
       aux = aux.parent_path();
     }
-    else if(!instr.compare(".")){
+    else if(!(*it).compare(".")){
       //do nothing
     }
     else{
-      aux.append(instr);
+      aux.append((*it));
     }
   }
+
   //checks if directory is valid, if not returns the original directory
   if(std::filesystem::is_directory(aux)){
     return aux;
