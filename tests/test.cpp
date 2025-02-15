@@ -16,15 +16,24 @@ std::vector<std::string> mystrtok(std::string string_to_split, std::string token
     return output;
   }
 
+void func2(std::unique_ptr<std::string> &path){
+  path = std::make_unique<std::string>("foi mudado na 2");
+}
+
+void func1(std::unique_ptr<std::string> &path){
+  path = std::make_unique<std::string>("foi mudado na 1");
+  std::cout << *path << std::endl;
+  func2(path);
+  return;
+}
 
 int main(int argc, char *argv[]){
 
-    std::string input("isto é um teste,vai ser comprido");
-    std::vector test = mystrtok(input);
+    // std::string test("cavalo azul");
+    // std::cout << test.find_first_of(" ") << std::endl;
 
-    for(auto it = test.begin(); it != test.end(); it++){
-        std::cout << (*it) << std::endl;
-    }
-
+    std::unique_ptr<std::string> path = std::make_unique<std::string>("initt");
+    func1(path);
+    std::cout << "main " << *path << std::endl;  
     return 0;
 }
