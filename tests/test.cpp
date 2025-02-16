@@ -18,6 +18,8 @@ std::vector<std::string> mystrtok(std::string string_to_split, std::string token
   return output;
 }
 
+
+
 // Custom funtion to skip spaces between the command and the argument
 inline std::string skip_spaces(std::string str){
   for(int pos = 0; pos<str.length(); pos++){
@@ -63,19 +65,74 @@ std::filesystem::path update_current_directory_path(std::filesystem::path curr_p
   }
 }
 
-int main(int argc, char *argv[]){ 
-    std::filesystem::path current_directory_path = std::filesystem::current_path();
-    std::cout << current_directory_path << std::endl;
 
-    std::string aaaa("cd       /tmp/blueberry");
-    std::string aux(skip_spaces(aaaa.substr(2)));
+
+
+
+// separates words by " " and "' '"
+// example: input:  "aaa 'bbb ccc' ddd"
+//          output: [aaa, 'bbb ccc', ddd]
+std::vector<std::string> process_input_commands(std::string input){
+  int start(0), end(0);
+  bool is_quote_open = false;
+  std::vector<std::string> output;
+
+  for(int i = 0; i < input.length(); i++){
+    if(!is_quote_open){
+      if(input[i] == ' ' && start!=-1){
+        output.push_back(input.substr(start, i));
+        start=-1;
+      }
+      else if(input[i] == '\''){
+        is_quote_open = !is_quote_open;
+        start = i;
+      }
+      //skips spaces if theres more than one between arguments
+      else{
+        if(start == -1){
+          start = i;
+        }
+      }
+    }
+    else{
+      if(input[i] == '\''){
+        output.push_back(input.substr(start, i));
+        is_quote_open = !is_quote_open;
+        start = -1;
+      }
+    }
+  }
+  // saves the rest of the input if there's any left
+  if(input.substr(start).length() != 0){
+    output.push_back(input.substr(start));
+  }
+  return output;
+}
+
+
+
+
+
+
+
+
+int main(int argc, char *argv[]){ 
+
+    std::string aaaa("cd           /tmp/blueberry");
+    //std::string aux(skip_spaces(aaaa.substr(2)));
+
+    std::vector<std::string> clean_input = process_input_commands(aaaa);
+    for(auto word : clean_input){
+      std::cout << word << std::endl;
+    }
+
 
     // std::cout << "is directory? " << std::filesystem::is_directory(aux) << std::endl;
     // std::cout << "path " << current_directory_path << std::endl;
     
 
 
-    current_directory_path = update_current_directory_path(current_directory_path, aux);
+    //current_directory_path = update_current_directory_path(current_directory_path, aux);
     // std::cout << "auxpath " << auxpath << std::endl;
     // std::cout << "is directory? " << std::filesystem::is_directory(auxpath) << std::endl;
 
@@ -94,7 +151,7 @@ int main(int argc, char *argv[]){
     //   std::cout << "cd: " << aux << ": No such file or directory" << std::endl;
 //    }
 
-    std::cout << current_directory_path << std::endl;
+    //std::cout << current_directory_path << std::endl;
 
 
     // std::cout << std::filesystem::is_directory("/home/") << std::endl;  
