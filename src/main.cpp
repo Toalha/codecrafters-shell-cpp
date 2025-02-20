@@ -74,18 +74,120 @@ std::vector<std::string> mystrtok(std::string string_to_split, std::string token
   return output;
 }
 
-// separates words by " " and "' '"
+// // separates words by " " and "' '"
+// // example: input:  "aaa 'bbb ccc' ddd"
+// //          output: [aaa, 'bbb ccc', ddd]
+// std::vector<tokenized_inputs> process_input_commands(std::string input){
+//   int start(0), end(0);
+//   bool single_quote_open = false;
+//   bool consec_single_quote = false;
+
+//   bool double_quote_open = false;
+//   bool consec_double_quote = false; // TODO MISSING ADD SUPPORT FOR DOUBLE QUOTES//REMAKE TO BE CLEANER
+
+
+//   std::vector<tokenized_inputs> output;
+
+//   for(int i = 0; i < input.length(); i++){
+//     if(!single_quote_open){
+//       if(input[i] == ' '){
+//         if(start!=-1){
+//           output.push_back(tokenized_inputs(input.substr(start, i-start), tokenized_inputs::no_quote));
+//           start=-1;
+//         }
+//       }
+//       else if(input[i] == '\''){
+//         single_quote_open = true;
+//         start = i;
+//       }
+//       //skips spaces if theres more than one between arguments
+//       else{
+//         if(start == -1){
+//           start = i;
+//         }
+//       }
+//     }
+//     else{
+//       if(input[i] == '\''){
+//         // if conseq single quotes then concatenate words together
+//         if(consec_single_quote){
+//           output.back().token.append(input.substr(start+1, i-start-1));
+//           consec_single_quote = false;
+//           single_quote_open = false;
+//           start = -1;
+//         }
+//         else{
+//           //+1/-1 because we dont want to include the ' in the string
+//           output.push_back(tokenized_inputs(input.substr(start+1, i-start-1), tokenized_inputs::single_quote)); 
+//           single_quote_open = false;
+//           start = -1;
+//         }
+
+//         //checks if consecutive single quotes
+//         if(i < input.length()-1 && input[i+1] == '\''){
+//           consec_single_quote = true;
+//         }
+//       }
+//     }
+//   }
+//   // saves the rest of the input if there's any left
+//   if(start != -1 && input.substr(start).length() != 0){
+//     //output.push_back(input.substr(start));
+//     output.push_back(tokenized_inputs(input.substr(start), tokenized_inputs::no_quote));
+//   }
+//   return output;
+// }
+
+
+// separates words by " " and "\'" and "\""
 // example: input:  "aaa 'bbb ccc' ddd"
 //          output: [aaa, 'bbb ccc', ddd]
 std::vector<tokenized_inputs> process_input_commands(std::string input){
   int start(0), end(0);
   bool single_quote_open = false;
-  bool consec_single_quote = false;
+  bool double_quote_open = false;
+  bool consec_quotes = false;
 
   std::vector<tokenized_inputs> output;
 
   for(int i = 0; i < input.length(); i++){
-    if(!single_quote_open){
+    if(single_quote_open){
+      if(input[i] == '\''){
+        if(consec_quotes){
+          output.back().token.append(input.substr(start+1, i-start-1));
+          consec_quotes = false;
+        }
+        else{
+          output.push_back(tokenized_inputs(input.substr(start+1, i-start-1), tokenized_inputs::single_quote));
+        }
+        single_quote_open = false;
+        start=-1;
+
+        //verifies if there are 2 single quotes together
+        if(i < input.length()-1 && input[i+1] == '\''){
+          consec_quotes = true;
+        }
+      }
+    }
+    else if(double_quote_open){
+      if(input[i] == '\"'){
+        if(consec_quotes){
+          output.back().token.append(input.substr(start+1, i-start-1));
+          consec_quotes = false;
+        }
+        else{
+          output.push_back(tokenized_inputs(input.substr(start+1, i-start-1), tokenized_inputs::double_quote));
+        }
+        double_quote_open = false;
+        start=-1;
+
+        //verifies if there are 2 double quotes together
+        if(i < input.length()-1 && input[i+1] == '\"'){
+          consec_quotes = true;
+        }
+      }
+    }
+    else{
       if(input[i] == ' '){
         if(start!=-1){
           output.push_back(tokenized_inputs(input.substr(start, i-start), tokenized_inputs::no_quote));
@@ -96,36 +198,18 @@ std::vector<tokenized_inputs> process_input_commands(std::string input){
         single_quote_open = true;
         start = i;
       }
-      //skips spaces if theres more than one between arguments
+      else if(input[i] == '\"'){
+        double_quote_open = true;
+        start = i;
+      }
       else{
         if(start == -1){
           start = i;
         }
       }
     }
-    else{
-      if(input[i] == '\''){
-        // if conseq single quotes then concatenate words together
-        if(consec_single_quote){
-          output.back().token.append(input.substr(start+1, i-start-1));
-          consec_single_quote = false;
-          single_quote_open = false;
-          start = -1;
-        }
-        else{
-          //+1/-1 because we dont want to include the ' in the string
-          output.push_back(tokenized_inputs(input.substr(start+1, i-start-1), tokenized_inputs::single_quote)); 
-          single_quote_open = false;
-          start = -1;
-        }
-
-        //checks if consecutive single quotes
-        if(i < input.length()-1 && input[i+1] == '\''){
-          consec_single_quote = true;
-        }
-      }
-    }
   }
+
   // saves the rest of the input if there's any left
   if(start != -1 && input.substr(start).length() != 0){
     //output.push_back(input.substr(start));
@@ -134,15 +218,6 @@ std::vector<tokenized_inputs> process_input_commands(std::string input){
   return output;
 }
 
-// Custom funtion to skip spaces between the command and the argument
-inline std::string skip_spaces(std::string str){
-  for(int pos = 0; pos<str.length(); pos++){
-    if(str[pos] != ' '){
-      return str.substr(pos);
-    }
-  }
-  return " ";
-}
 
 // Search if the command is in folders specified by $PATH
 // Returns: folder where command was found
@@ -297,6 +372,9 @@ int main() {
         }
         else if(_token.quote == tokenized_inputs::single_quote){
           ext_command.append("'"+ _token.token + "'" + " ");
+        }
+        else if(_token.quote == tokenized_inputs::double_quote){
+          ext_command.append("\""+ _token.token + "\"" + " ");
         }
         
       }
